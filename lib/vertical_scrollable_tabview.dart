@@ -222,15 +222,17 @@ class _VerticalScrollableTabViewState<ElementType>
 
   Widget buildItem(int index) {
     ElementType category = widget._listItemData[index];
-    return RectGetter(
-      /// when announce GlobalKey，we can use RectGetter.getRectFromKey(key) to get Rect
-      /// 宣告 GlobalKey，之後可以 RectGetter.getRectFromKey(key) 的方式獲得 Rect
-      key: itemsKeys[index],
-      child: AutoScrollTag(
-        key: ValueKey(index),
-        index: index,
-        controller: widget._autoScrollController,
-        child: widget._eachItemChild(category, index),
+    return SliverToBoxAdapter(
+      child: RectGetter(
+        /// when announce GlobalKey，we can use RectGetter.getRectFromKey(key) to get Rect
+        /// 宣告 GlobalKey，之後可以 RectGetter.getRectFromKey(key) 的方式獲得 Rect
+        key: itemsKeys[index],
+        child: AutoScrollTag(
+          key: ValueKey(index),
+          index: index,
+          controller: widget._autoScrollController,
+          child: widget._eachItemChild(category, index),
+        ),
       ),
     );
   }
