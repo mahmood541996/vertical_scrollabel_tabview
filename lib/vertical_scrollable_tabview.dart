@@ -20,18 +20,18 @@ class VerticalScrollableTabBarStatus {
 /// 用來設定動畫狀態的（參考 scroll_to_index 的 preferPosition 屬性）
 enum VerticalScrollPosition { begin, middle, end }
 
-class VerticalScrollableTabView<ElementType> extends StatefulWidget {
+class VerticalScrollableTabView extends StatefulWidget {
   /// TabBar Controller to let widget listening TabBar changed
   /// TabBar Controller 用來讓 widget 監聽 TabBar 的 index 是否有更動
   final TabController _tabController;
 
   /// Required a List<dynamic> Type，you can put your data that you wanna put in item
   /// 要求 List<dynamic> 的結構，List 裡面可以放自己建立的 Object
-  final List<ElementType> _listItemData;
+  final List<dynamic> _listItemData;
 
   /// A callback that return an Object inside _listItemData and the index of ListView.Builder
   /// A callback 用來回傳一個 _listItemData 裡面的 Object 型態和 ListView.Builder 的 index
-  final Widget Function(ElementType aaa, int index) _eachItemChild;
+  final Widget Function(dynamic aaa, int index) _eachItemChild;
 
   /// VerticalScrollPosition = is ann Animation style from scroll_to_index,
   /// It's show the item position in listView.builder
@@ -67,6 +67,7 @@ class VerticalScrollableTabView<ElementType> extends StatefulWidget {
   final ScrollViewKeyboardDismissBehavior _keyboardDismissBehavior;
   final String? _restorationId;
   final Clip _clipBehavior;
+  final double _heightAboveChildren;
 
   const VerticalScrollableTabView({
     Key? key,
@@ -74,8 +75,8 @@ class VerticalScrollableTabView<ElementType> extends StatefulWidget {
     /// Custom parameters
     required AutoScrollController autoScrollController,
     required TabController tabController,
-    required List<ElementType> listItemData,
-    required Widget Function(ElementType element, int index) eachItemChild,
+    required List<dynamic> listItemData,
+    required Widget Function(dynamic aaa, int index) eachItemChild,
     VerticalScrollPosition verticalScrollPosition =
         VerticalScrollPosition.begin,
 
@@ -98,6 +99,7 @@ class VerticalScrollableTabView<ElementType> extends StatefulWidget {
     Key? center,
     double anchor = 0.0,
     double? cacheExtent,
+    required double heightAboveChildren,
     required List<Widget> slivers,
     int? semanticChildCount,
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
@@ -136,15 +138,15 @@ class VerticalScrollableTabView<ElementType> extends StatefulWidget {
         _keyboardDismissBehavior = keyboardDismissBehavior,
         _restorationId = restorationId,
         _clipBehavior = clipBehavior,
+        _heightAboveChildren = heightAboveChildren,
         super(key: key);
 
   @override
-  State<VerticalScrollableTabView<ElementType>> createState() =>
-      _VerticalScrollableTabViewState<ElementType>();
+  State<VerticalScrollableTabView> createState() =>
+      _VerticalScrollableTabViewState();
 }
 
-class _VerticalScrollableTabViewState<ElementType>
-    extends State<VerticalScrollableTabView<ElementType>>
+class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
     with SingleTickerProviderStateMixin {
   /// Instantiate RectGetter（套件提供的方法）
   final listViewKey = RectGetter.createGlobalKey();
@@ -194,10 +196,7 @@ class _VerticalScrollableTabViewState<ElementType>
             center: widget._center,
             anchor: widget._anchor,
             cacheExtent: widget._cacheExtent,
-            slivers: [
-              ...widget._slivers,
-              ...buildListItemsAsWidgets(),
-            ],
+            slivers: [...widget._slivers, buildVerticalSliverList()],
             semanticChildCount: widget._semanticChildCount,
             dragStartBehavior: widget._dragStartBehavior,
             keyboardDismissBehavior: widget._keyboardDismissBehavior,
@@ -209,30 +208,30 @@ class _VerticalScrollableTabViewState<ElementType>
     );
   }
 
-  List<Widget> buildListItemsAsWidgets() {
-    final result = <Widget>[];
-
-    for (int index = 0; index < widget._listItemData.length; index++) {
-      itemsKeys[index] = RectGetter.createGlobalKey();
-      result.add(buildItem(index));
-    }
-
-    return result;
+  Widget buildVerticalSliverList() {
+    return SliverList(
+      delegate: SliverChildListDelegate(List.generate(
+        widget._listItemData.length,
+        (index) {
+          // 建立 itemKeys 的 Key
+          itemsKeys[index] = RectGetter.createGlobalKey();
+          return buildItem(index);
+        },
+      )),
+    );
   }
 
   Widget buildItem(int index) {
-    ElementType category = widget._listItemData[index];
-    return SliverToBoxAdapter(
-      child: RectGetter(
-        /// when announce GlobalKey，we can use RectGetter.getRectFromKey(key) to get Rect
-        /// 宣告 GlobalKey，之後可以 RectGetter.getRectFromKey(key) 的方式獲得 Rect
-        key: itemsKeys[index],
-        child: AutoScrollTag(
-          key: ValueKey(index),
-          index: index,
-          controller: widget._autoScrollController,
-          child: widget._eachItemChild(category, index),
-        ),
+    dynamic category = widget._listItemData[index];
+    return RectGetter(
+      /// when announce GlobalKey，we can use RectGetter.getRectFromKey(key) to get Rect
+      /// 宣告 GlobalKey，之後可以 RectGetter.getRectFromKey(key) 的方式獲得 Rect
+      key: itemsKeys[index],
+      child: AutoScrollTag(
+        key: ValueKey(index),
+        index: index,
+        controller: widget._autoScrollController,
+        child: widget._eachItemChild(category, index),
       ),
     );
   }
@@ -293,8 +292,7 @@ class _VerticalScrollableTabViewState<ElementType>
           if (itemRect.bottom <
               rect.top +
                   MediaQuery.of(context).viewPadding.top +
-                  kToolbarHeight +
-                  56) return;
+                  widget._heightAboveChildren) return;
           break;
       }
 
