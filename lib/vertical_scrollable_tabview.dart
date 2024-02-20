@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:rect_getter/rect_getter.dart';
@@ -265,10 +263,8 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   }
 
   void _moveToTabOnScrolling() {
-    log('_moveToTabOnScrolling');
     List<int> visibleItems = getVisibleItemsIndex();
     widget._tabController.animateTo(visibleItems[0]);
-    log('tabIndex: ${visibleItems[0]}');
   }
 
   /// getVisibleItemsIndex on Screen
@@ -309,8 +305,6 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   }
 
   void _handleTabControllerTick() {
-    log('_handleTabControllerTick');
-    log('tabIndex: ${VerticalScrollableTabBarStatus.isOnTapIndex}');
     if (VerticalScrollableTabBarStatus.isOnTap) {
       VerticalScrollableTabBarStatus.isOnTap = false;
       _animateAndScrollTo(VerticalScrollableTabBarStatus.isOnTapIndex);
