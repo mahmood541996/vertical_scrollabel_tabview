@@ -158,17 +158,16 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   @override
   void initState() {
     widget._tabController.addListener(_handleTabControllerTick);
-    widget._autoScrollController.addListener(() {
-      List<int> visibleItems = getVisibleItemsIndex();
-      widget._tabController.animateTo(visibleItems[0]);
-    });
+    widget._autoScrollController.addListener(_moveToTapOnScrolling);
     super.initState();
   }
 
   @override
   void dispose() {
+    widget._autoScrollController.removeListener(_moveToTapOnScrolling);
     widget._tabController.removeListener(_handleTabControllerTick);
     // We don't own the _tabController, so it's not disposed here.
+    // We don't own the _autoScrollController, so it's not disposed here.
     super.dispose();
   }
 
@@ -178,35 +177,32 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
       key: listViewKey,
       // NotificationListener 是一個由下往上傳遞通知，true 阻止通知、false 傳遞通知，確保指監聽滾動的通知
       // ScrollNotification => https://www.jianshu.com/p/d80545454944
-      child: NotificationListener<UserScrollNotification>(
-        // onNotification: onScrollNotification,
-        child: Scrollbar(
+      child: Scrollbar(
+        controller: widget._autoScrollController,
+        thumbVisibility: widget._thumbVisibility,
+        trackVisibility: widget._trackVisibility,
+        thickness: widget._thickness,
+        radius: widget._radius,
+        notificationPredicate: widget._notificationPredicate,
+        interactive: widget._interactive,
+        scrollbarOrientation: widget._scrollbarOrientation,
+        child: CustomScrollView(
+          scrollDirection: widget._scrollDirection,
+          reverse: widget._reverse,
           controller: widget._autoScrollController,
-          thumbVisibility: widget._thumbVisibility,
-          trackVisibility: widget._trackVisibility,
-          thickness: widget._thickness,
-          radius: widget._radius,
-          notificationPredicate: widget._notificationPredicate,
-          interactive: widget._interactive,
-          scrollbarOrientation: widget._scrollbarOrientation,
-          child: CustomScrollView(
-            scrollDirection: widget._scrollDirection,
-            reverse: widget._reverse,
-            controller: widget._autoScrollController,
-            primary: widget._primary,
-            physics: widget._physics,
-            scrollBehavior: widget._scrollBehavior,
-            shrinkWrap: widget._shrinkWrap,
-            center: widget._center,
-            anchor: widget._anchor,
-            cacheExtent: widget._cacheExtent,
-            slivers: [...widget._slivers, buildVerticalSliverList()],
-            semanticChildCount: widget._semanticChildCount,
-            dragStartBehavior: widget._dragStartBehavior,
-            keyboardDismissBehavior: widget._keyboardDismissBehavior,
-            restorationId: widget._restorationId,
-            clipBehavior: widget._clipBehavior,
-          ),
+          primary: widget._primary,
+          physics: widget._physics,
+          scrollBehavior: widget._scrollBehavior,
+          shrinkWrap: widget._shrinkWrap,
+          center: widget._center,
+          anchor: widget._anchor,
+          cacheExtent: widget._cacheExtent,
+          slivers: [...widget._slivers, buildVerticalSliverList()],
+          semanticChildCount: widget._semanticChildCount,
+          dragStartBehavior: widget._dragStartBehavior,
+          keyboardDismissBehavior: widget._keyboardDismissBehavior,
+          restorationId: widget._restorationId,
+          clipBehavior: widget._clipBehavior,
         ),
       ),
     );
@@ -244,6 +240,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   /// This need to put inside TabBar onTap, but in this case we put inside tabBarListener
   void animateAndScrollTo(int index) async {
     widget._tabController.animateTo(index);
+    widget._autoScrollController.removeListener(_moveToTapOnScrolling);
     switch (widget._verticalScrollPosition) {
       case VerticalScrollPosition.begin:
         widget._autoScrollController
@@ -258,15 +255,13 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
             .scrollToIndex(index, preferPosition: AutoScrollPosition.end);
         break;
     }
+    widget._autoScrollController.addListener(_moveToTapOnScrolling);
   }
 
-  /// onScrollNotification of NotificationListener
-  /// true表示消費掉當前通知不再向上一级NotificationListener傳遞通知，false則會再向上一级NotificationListener傳遞通知；
-  // bool onScrollNotification(UserScrollNotification notification) {
-  //   List<int> visibleItems = getVisibleItemsIndex();
-  //   widget._tabController.animateTo(visibleItems[0]);
-  //   return false;
-  // }
+  void _moveToTapOnScrolling() {
+    List<int> visibleItems = getVisibleItemsIndex();
+    widget._tabController.animateTo(visibleItems[0]);
+  }
 
   /// getVisibleItemsIndex on Screen
   /// 取得現在畫面上可以看得到的 Items Index
