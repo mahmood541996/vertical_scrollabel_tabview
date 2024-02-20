@@ -155,19 +155,22 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   /// 用來儲存 items 的 Rect 的 Map
   Map<int, dynamic> itemsKeys = {};
 
+  late final VoidCallback _scrollControllerListener;
+
   @override
   void initState() {
+    _scrollControllerListener = _moveToTabOnScrolling;
+
     widget._tabController.addListener(_handleTabControllerTick);
-    widget._autoScrollController.addListener(_moveToTapOnScrolling);
+    widget._autoScrollController.addListener(_scrollControllerListener);
     super.initState();
   }
 
   @override
   void dispose() {
-    widget._autoScrollController.removeListener(_moveToTapOnScrolling);
     widget._tabController.removeListener(_handleTabControllerTick);
+    widget._autoScrollController.removeListener(_scrollControllerListener);
     // We don't own the _tabController, so it's not disposed here.
-    // We don't own the _autoScrollController, so it's not disposed here.
     super.dispose();
   }
 
@@ -197,7 +200,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
           center: widget._center,
           anchor: widget._anchor,
           cacheExtent: widget._cacheExtent,
-          slivers: [...widget._slivers, buildVerticalSliverList()],
+          slivers: [...widget._slivers, _buildVerticalSliverList()],
           semanticChildCount: widget._semanticChildCount,
           dragStartBehavior: widget._dragStartBehavior,
           keyboardDismissBehavior: widget._keyboardDismissBehavior,
@@ -208,20 +211,20 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
     );
   }
 
-  Widget buildVerticalSliverList() {
+  Widget _buildVerticalSliverList() {
     return SliverList(
       delegate: SliverChildListDelegate(List.generate(
         widget._listItemData.length,
         (index) {
           // 建立 itemKeys 的 Key
           itemsKeys[index] = RectGetter.createGlobalKey();
-          return buildItem(index);
+          return _buildItem(index);
         },
       )),
     );
   }
 
-  Widget buildItem(int index) {
+  Widget _buildItem(int index) {
     dynamic category = widget._listItemData[index];
     return RectGetter(
       /// when announce GlobalKey，we can use RectGetter.getRectFromKey(key) to get Rect
@@ -238,29 +241,29 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
 
   /// Animation Function for tabBarListener
   /// This need to put inside TabBar onTap, but in this case we put inside tabBarListener
-  void animateAndScrollTo(int index) async {
+  void _animateAndScrollTo(int index) async {
+    widget._autoScrollController.removeListener(_scrollControllerListener);
     widget._tabController.animateTo(index);
-    widget._autoScrollController.removeListener(_moveToTapOnScrolling);
     switch (widget._verticalScrollPosition) {
       case VerticalScrollPosition.begin:
-        widget._autoScrollController.scrollToIndex(
+        await widget._autoScrollController.scrollToIndex(
           index,
           preferPosition: AutoScrollPosition.begin,
         );
         break;
       case VerticalScrollPosition.middle:
-        widget._autoScrollController
+        await widget._autoScrollController
             .scrollToIndex(index, preferPosition: AutoScrollPosition.middle);
         break;
       case VerticalScrollPosition.end:
-        widget._autoScrollController
+        await widget._autoScrollController
             .scrollToIndex(index, preferPosition: AutoScrollPosition.end);
         break;
     }
-    widget._autoScrollController.addListener(_moveToTapOnScrolling);
+    widget._autoScrollController.addListener(_scrollControllerListener);
   }
 
-  void _moveToTapOnScrolling() {
+  void _moveToTabOnScrolling() {
     List<int> visibleItems = getVisibleItemsIndex();
     widget._tabController.animateTo(visibleItems[0]);
   }
@@ -305,7 +308,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   void _handleTabControllerTick() {
     if (VerticalScrollableTabBarStatus.isOnTap) {
       VerticalScrollableTabBarStatus.isOnTap = false;
-      animateAndScrollTo(VerticalScrollableTabBarStatus.isOnTapIndex);
+      _animateAndScrollTo(VerticalScrollableTabBarStatus.isOnTapIndex);
     }
   }
 }
