@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'example_data.dart';
 
 class CategorySection extends StatelessWidget {
@@ -12,8 +13,13 @@ class CategorySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+      ),
+      margin: const EdgeInsets.only(
+        bottom: 16,
+        top: 16.0,
+      ),
       color: Colors.cyanAccent.withOpacity(0.1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,19 +32,19 @@ class CategorySection extends StatelessWidget {
   }
 
   Widget _buildFoodTileList(BuildContext context) {
-    return Column(
-      children: List.generate(
-        category.foods.length,
-        (index) {
-          final food = category.foods[index];
-          bool isLastIndex = index == category.foods.length - 1;
-          return _buildFoodTile(
-            food: food,
-            context: context,
-            isLastIndex: isLastIndex,
-          );
-        },
-      ),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: category.foods.length,
+      itemBuilder: (_, index) {
+        final food = category.foods[index];
+        bool isLastIndex = index == category.foods.length - 1;
+        return _buildFoodTile(
+          food: food,
+          context: context,
+          isLastIndex: isLastIndex,
+        );
+      },
     );
   }
 
@@ -49,7 +55,9 @@ class CategorySection extends StatelessWidget {
         const SizedBox(height: 16),
         _sectionTitle(context),
         const SizedBox(height: 8.0),
-        category.subtitle != null ? _sectionSubtitle(context) : const SizedBox(),
+        category.subtitle != null
+            ? _sectionSubtitle(context)
+            : const SizedBox(),
         const SizedBox(height: 16),
       ],
     );
@@ -118,7 +126,9 @@ class CategorySection extends StatelessWidget {
             ),
             Text(
               food.comparePrice,
-              style: _textTheme(context).caption?.copyWith(decoration: TextDecoration.lineThrough),
+              style: _textTheme(context)
+                  .caption
+                  ?.copyWith(decoration: TextDecoration.lineThrough),
             ),
             const SizedBox(width: 8.0),
             if (food.isHotSale) _buildFoodHotSaleIcon(),

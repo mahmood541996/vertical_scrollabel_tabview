@@ -155,20 +155,22 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   /// 用來儲存 items 的 Rect 的 Map
   Map<int, dynamic> itemsKeys = {};
 
+  late final VoidCallback _tabControllerListener;
   late final VoidCallback _scrollControllerListener;
 
   @override
   void initState() {
+    _tabControllerListener = _handleTabControllerTick;
     _scrollControllerListener = _moveToTabOnScrolling;
 
-    widget._tabController.addListener(_handleTabControllerTick);
+    widget._tabController.addListener(_tabControllerListener);
     widget._autoScrollController.addListener(_scrollControllerListener);
     super.initState();
   }
 
   @override
   void dispose() {
-    widget._tabController.removeListener(_handleTabControllerTick);
+    widget._tabController.removeListener(_tabControllerListener);
     widget._autoScrollController.removeListener(_scrollControllerListener);
     // We don't own the _tabController, so it's not disposed here.
     super.dispose();
@@ -242,8 +244,11 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   /// Animation Function for tabBarListener
   /// This need to put inside TabBar onTap, but in this case we put inside tabBarListener
   void _animateAndScrollTo(int index) async {
+    widget._tabController.removeListener(_tabControllerListener);
     widget._autoScrollController.removeListener(_scrollControllerListener);
+
     widget._tabController.animateTo(index);
+
     switch (widget._verticalScrollPosition) {
       case VerticalScrollPosition.begin:
         await widget._autoScrollController.scrollToIndex(
@@ -260,6 +265,8 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
             .scrollToIndex(index, preferPosition: AutoScrollPosition.end);
         break;
     }
+
+    widget._tabController.addListener(_tabControllerListener);
     widget._autoScrollController.addListener(_scrollControllerListener);
   }
 
