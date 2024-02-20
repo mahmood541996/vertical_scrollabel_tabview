@@ -244,7 +244,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
     switch (widget._verticalScrollPosition) {
       case VerticalScrollPosition.begin:
         widget._autoScrollController.animateTo(
-          itemsKeys[index].top - 2.0,
+          itemsKeys[index].top + 2.0,
           duration: scrollAnimationDuration,
           curve: Curves.ease,
         );
