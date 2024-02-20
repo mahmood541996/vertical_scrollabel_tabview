@@ -158,6 +158,10 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   @override
   void initState() {
     widget._tabController.addListener(_handleTabControllerTick);
+    widget._autoScrollController.addListener(() {
+      List<int> visibleItems = getVisibleItemsIndex();
+      widget._tabController.animateTo(visibleItems[0]);
+    });
     super.initState();
   }
 
@@ -175,7 +179,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
       // NotificationListener 是一個由下往上傳遞通知，true 阻止通知、false 傳遞通知，確保指監聽滾動的通知
       // ScrollNotification => https://www.jianshu.com/p/d80545454944
       child: NotificationListener<UserScrollNotification>(
-        onNotification: onScrollNotification,
+        // onNotification: onScrollNotification,
         child: Scrollbar(
           controller: widget._autoScrollController,
           thumbVisibility: widget._thumbVisibility,
@@ -258,11 +262,11 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
 
   /// onScrollNotification of NotificationListener
   /// true表示消費掉當前通知不再向上一级NotificationListener傳遞通知，false則會再向上一级NotificationListener傳遞通知；
-  bool onScrollNotification(UserScrollNotification notification) {
-    List<int> visibleItems = getVisibleItemsIndex();
-    widget._tabController.animateTo(visibleItems[0]);
-    return false;
-  }
+  // bool onScrollNotification(UserScrollNotification notification) {
+  //   List<int> visibleItems = getVisibleItemsIndex();
+  //   widget._tabController.animateTo(visibleItems[0]);
+  //   return false;
+  // }
 
   /// getVisibleItemsIndex on Screen
   /// 取得現在畫面上可以看得到的 Items Index
