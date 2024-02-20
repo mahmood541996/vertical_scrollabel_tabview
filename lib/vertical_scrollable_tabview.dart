@@ -99,7 +99,7 @@ class VerticalScrollableTabView extends StatefulWidget {
     Key? center,
     double anchor = 0.0,
     double? cacheExtent,
-    required double heightAboveChildren,
+    required double collapsedHeightAboveChildren,
     required List<Widget> slivers,
     int? semanticChildCount,
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
@@ -138,7 +138,7 @@ class VerticalScrollableTabView extends StatefulWidget {
         _keyboardDismissBehavior = keyboardDismissBehavior,
         _restorationId = restorationId,
         _clipBehavior = clipBehavior,
-        _heightAboveChildren = heightAboveChildren,
+        _heightAboveChildren = collapsedHeightAboveChildren,
         super(key: key);
 
   @override

@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage>
         verticalScrollPosition: VerticalScrollPosition.begin,
         eachItemChild: (object, index) =>
             CategorySection(category: object as Category),
-        heightAboveChildren: kToolbarHeight + 56.0,
+        collapsedHeightAboveChildren: kToolbarHeight + 56.0,
         slivers: [
           SliverAppBar(
             pinned: true,
