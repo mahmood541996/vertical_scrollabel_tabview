@@ -243,8 +243,11 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
     widget._autoScrollController.removeListener(_moveToTapOnScrolling);
     switch (widget._verticalScrollPosition) {
       case VerticalScrollPosition.begin:
-        widget._autoScrollController
-            .scrollToIndex(index, preferPosition: AutoScrollPosition.begin);
+        widget._autoScrollController.animateTo(
+          itemsKeys[index].top,
+          duration: scrollAnimationDuration,
+          curve: Curves.ease,
+        );
         break;
       case VerticalScrollPosition.middle:
         widget._autoScrollController
