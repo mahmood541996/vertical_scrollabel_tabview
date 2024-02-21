@@ -9,6 +9,11 @@ class VerticalScrollableTabBarStatus {
   static bool isOnTap = false;
   static int isOnTapIndex = 0;
 
+  static void resetToDefaults() {
+    isOnTap = false;
+    isOnTapIndex = 0;
+  }
+
   static void setIndex(int index) {
     if (isOnTapIndex == index) return;
     VerticalScrollableTabBarStatus.isOnTap = true;
@@ -180,6 +185,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
     if (oldWidget._tabController != _tabController) {
       _tabController = widget._tabController;
       _tabController.addListener(_tabControllerListener);
+      VerticalScrollableTabBarStatus.resetToDefaults();
     }
 
     if (oldWidget._autoScrollController != _autoScrollController) {
