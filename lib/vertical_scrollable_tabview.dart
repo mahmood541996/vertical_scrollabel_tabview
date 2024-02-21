@@ -159,20 +159,37 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   late final VoidCallback _tabControllerListener;
   late final VoidCallback _scrollControllerListener;
 
+  late TabController _tabController;
+  late AutoScrollController _autoScrollController;
+
   @override
   void initState() {
     _tabControllerListener = _handleTabControllerTick;
     _scrollControllerListener = _moveToTabOnScrolling;
 
-    widget._tabController.addListener(_tabControllerListener);
-    widget._autoScrollController.addListener(_scrollControllerListener);
+    _tabController = widget._tabController;
+    _autoScrollController = widget._autoScrollController;
+
+    _tabController.addListener(_tabControllerListener);
+    _autoScrollController.addListener(_scrollControllerListener);
     super.initState();
   }
 
   @override
+  void didUpdateWidget(covariant VerticalScrollableTabView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    _tabController = widget._tabController;
+    _autoScrollController = widget._autoScrollController;
+
+    _tabController.addListener(_tabControllerListener);
+    _autoScrollController.addListener(_scrollControllerListener);
+  }
+
+  @override
   void dispose() {
-    widget._tabController.removeListener(_tabControllerListener);
-    widget._autoScrollController.removeListener(_scrollControllerListener);
+    _tabController.removeListener(_tabControllerListener);
+    _autoScrollController.removeListener(_scrollControllerListener);
     // We don't own the _tabController, so it's not disposed here.
     super.dispose();
   }
@@ -184,7 +201,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
       // NotificationListener 是一個由下往上傳遞通知，true 阻止通知、false 傳遞通知，確保指監聽滾動的通知
       // ScrollNotification => https://www.jianshu.com/p/d80545454944
       child: Scrollbar(
-        controller: widget._autoScrollController,
+        controller: _autoScrollController,
         thumbVisibility: widget._thumbVisibility,
         trackVisibility: widget._trackVisibility,
         thickness: widget._thickness,
@@ -195,7 +212,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
         child: CustomScrollView(
           scrollDirection: widget._scrollDirection,
           reverse: widget._reverse,
-          controller: widget._autoScrollController,
+          controller: _autoScrollController,
           primary: widget._primary,
           physics: widget._physics,
           scrollBehavior: widget._scrollBehavior,
@@ -236,7 +253,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
       child: AutoScrollTag(
         key: ValueKey(index),
         index: index,
-        controller: widget._autoScrollController,
+        controller: _autoScrollController,
         child: widget._eachItemChild(category, index),
       ),
     );
@@ -245,12 +262,12 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   /// Animation Function for tabBarListener
   /// This need to put inside TabBar onTap, but in this case we put inside tabBarListener
   void _animateAndScrollTo(int index) async {
-    widget._tabController.removeListener(_tabControllerListener);
-    widget._autoScrollController.removeListener(_scrollControllerListener);
+    _tabController.removeListener(_tabControllerListener);
+    _autoScrollController.removeListener(_scrollControllerListener);
 
-    widget._tabController.animateTo(index);
+    _tabController.animateTo(index);
 
-    await widget._autoScrollController.scrollToIndex(
+    await _autoScrollController.scrollToIndex(
       index,
       preferPosition: switch (widget._verticalScrollPosition) {
         (VerticalScrollPosition.begin) => AutoScrollPosition.begin,
@@ -259,13 +276,13 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
       },
     );
 
-    widget._tabController.addListener(_tabControllerListener);
-    widget._autoScrollController.addListener(_scrollControllerListener);
+    _tabController.addListener(_tabControllerListener);
+    _autoScrollController.addListener(_scrollControllerListener);
   }
 
   void _moveToTabOnScrolling() {
     List<int> visibleItems = getVisibleItemsIndex();
-    widget._tabController.animateTo(visibleItems[0]);
+    _tabController.animateTo(visibleItems[0]);
   }
 
   /// getVisibleItemsIndex on Screen
