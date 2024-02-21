@@ -177,20 +177,25 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
 
   @override
   void didUpdateWidget(covariant VerticalScrollableTabView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
     _tabController = widget._tabController;
     _autoScrollController = widget._autoScrollController;
 
     _tabController.addListener(_tabControllerListener);
     _autoScrollController.addListener(_scrollControllerListener);
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    _tabController.removeListener(_tabControllerListener);
+    _autoScrollController.removeListener(_scrollControllerListener);
   }
 
   @override
   void dispose() {
     _tabController.removeListener(_tabControllerListener);
     _autoScrollController.removeListener(_scrollControllerListener);
-    // We don't own the _tabController, so it's not disposed here.
     super.dispose();
   }
 
