@@ -200,6 +200,7 @@ class _VerticalScrollableTabViewState extends State<VerticalScrollableTabView>
   void dispose() {
     _tabController.removeListener(_tabControllerListener);
     _autoScrollController.removeListener(_scrollControllerListener);
+    VerticalScrollableTabBarStatus.resetToDefaults();
     super.dispose();
   }
 
