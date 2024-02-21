@@ -10,6 +10,7 @@ class VerticalScrollableTabBarStatus {
   static int isOnTapIndex = 0;
 
   static void setIndex(int index) {
+    if (isOnTapIndex == index) return;
     VerticalScrollableTabBarStatus.isOnTap = true;
     VerticalScrollableTabBarStatus.isOnTapIndex = index;
   }
